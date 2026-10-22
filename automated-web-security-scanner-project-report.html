@@ -1,0 +1,401 @@
+
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Automated Web Security Scanner — Project Report</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, "Segoe UI", system-ui, sans-serif;
+    font-size: 14px;
+    line-height: 1.7;
+    color: #1f2328;
+    background: #ffffff;
+    padding: 40px 20px 60px;
+  }
+  .page { max-width: 760px; margin: 0 auto; }
+
+  /* Cover */
+  .cover {
+    text-align: center;
+    padding: 44px 24px 40px;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    background: #f7f8fa;
+    margin-bottom: 36px;
+  }
+  .cover .badge {
+    display: inline-block;
+    background: #3b82d4;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border-radius: 20px;
+    margin-bottom: 14px;
+  }
+  .cover h1 { font-size: 24px; font-weight: 700; margin-bottom: 6px; }
+  .cover .subtitle { color: #57606a; font-size: 14px; margin-bottom: 28px; }
+
+  .cover .divider { border: none; border-top: 1px solid #e5e7eb; margin: 20px auto; width: 60%; }
+
+  .cover .meta-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px 32px;
+    max-width: 480px;
+    margin: 0 auto;
+    text-align: left;
+  }
+  .cover .meta-item .label {
+    font-size: 11px;
+    color: #57606a;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    margin-bottom: 2px;
+  }
+  .cover .meta-item .value {
+    font-size: 13px;
+    font-weight: 600;
+    color: #1f2328;
+  }
+
+  /* Sections */
+  h2 {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1f2328;
+    margin: 32px 0 10px;
+    padding-bottom: 6px;
+    border-bottom: 2px solid #3b82d4;
+  }
+  h3 { font-size: 14px; font-weight: 600; margin: 18px 0 6px; color: #1f2328; }
+  p { margin-bottom: 10px; color: #1f2328; }
+  ul, ol { padding-left: 20px; margin-bottom: 10px; }
+  li { margin-bottom: 4px; }
+
+  /* Table */
+  table { width: 100%; border-collapse: collapse; margin: 12px 0 18px; font-size: 13px; }
+  th { background: #f7f8fa; text-align: left; padding: 8px 10px; font-weight: 600; border: 1px solid #e5e7eb; }
+  td { padding: 7px 10px; border: 1px solid #e5e7eb; vertical-align: top; }
+  tr:nth-child(even) td { background: #fafafa; }
+
+  /* Status badges */
+  .pass    { display:inline-block; background:#d1fae5; color:#065f46; padding:1px 8px; border-radius:12px; font-size:12px; font-weight:600; }
+  .warning { display:inline-block; background:#fef3c7; color:#92400e; padding:1px 8px; border-radius:12px; font-size:12px; font-weight:600; }
+  .fail    { display:inline-block; background:#fee2e2; color:#991b1b; padding:1px 8px; border-radius:12px; font-size:12px; font-weight:600; }
+
+  /* Code block */
+  pre {
+    background: #f7f8fa;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    padding: 12px 14px;
+    font-size: 12.5px;
+    font-family: "Consolas", "Courier New", monospace;
+    overflow-x: auto;
+    margin: 10px 0 16px;
+    color: #1f2328;
+  }
+
+  /* Info / warn boxes */
+  .infobox {
+    background: #eff6ff;
+    border-left: 4px solid #3b82d4;
+    padding: 10px 14px;
+    border-radius: 0 6px 6px 0;
+    margin: 14px 0;
+    font-size: 13px;
+  }
+  .warnbox {
+    background: #fffbeb;
+    border-left: 4px solid #f59e0b;
+    padding: 10px 14px;
+    border-radius: 0 6px 6px 0;
+    margin: 14px 0;
+    font-size: 13px;
+  }
+
+  /* Architecture diagram */
+  .arch {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    flex-wrap: wrap;
+    margin: 16px 0;
+  }
+  .arch-box {
+    background: #f7f8fa;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    padding: 10px 16px;
+    text-align: center;
+    font-size: 12px;
+    font-weight: 600;
+    min-width: 110px;
+  }
+  .arch-arrow { font-size: 20px; color: #3b82d4; padding: 0 8px; }
+
+  /* Footer */
+  .footer {
+    text-align: center;
+    font-size: 12px;
+    color: #57606a;
+    border-top: 1px solid #e5e7eb;
+    padding-top: 18px;
+    margin-top: 48px;
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  
+  <div class="cover">
+    <div class="badge">Project Report</div>
+    <h1>Automated Cybersecurity Web Scanner</h1>
+    <p class="subtitle">A Python + Streamlit web application for automated security header analysis</p>
+    <hr class="divider" />
+    <div class="meta-grid">
+      <div class="meta-item">
+        <div class="label">Student Name</div>
+        <div class="value">Savio Watson</div>
+      </div>
+      <div class="meta-item">
+        <div class="label">Institution</div>
+        <div class="value">Lachoo Memorial College, Jodhpur</div>
+      </div>
+      <div class="meta-item">
+        <div class="label">Technology</div>
+        <div class="value">Python 3 · Streamlit</div>
+      </div>
+      <div class="meta-item">
+        <div class="label">Submission Date</div>
+        <div class="value">22 October 2026</div>
+      </div>
+      <div class="meta-item">
+        <div class="label">Domain</div>
+        <div class="value">Cybersecurity</div>
+      </div>
+      <div class="meta-item">
+        <div class="label">Status</div>
+        <div class="value">Completed</div>
+      </div>
+    </div>
+  </div>
+
+  
+  <h2>1. Introduction</h2>
+  <p>
+    Web security misconfigurations are among the most common vulnerabilities in modern web applications.
+    HTTP security headers are a lightweight but powerful mechanism that instruct browsers to enforce
+    security policies — yet they are frequently absent or misconfigured in production environments.
+  </p>
+  <p>
+    This project delivers an <strong>Automated Cybersecurity Web Scanner</strong> that enables any user
+    to analyse the security posture of a target website in seconds, without requiring specialist knowledge
+    or command-line tools. The application is built entirely in Python and exposed through an interactive
+    browser-based interface powered by Streamlit.
+  </p>
+
+  
+  <h2>2. Objectives</h2>
+  <ul>
+    <li>Automatically check HTTP security headers, HTTPS/SSL configuration, and CORS settings of any URL.</li>
+    <li>Present findings with clear <strong>Pass / Warning / Fail</strong> verdicts and actionable recommendations.</li>
+    <li>Compute an overall security score and summarise the site's security posture.</li>
+    <li>Allow users to export scan results as <strong>CSV</strong> or <strong>JSON</strong> for reporting or further analysis.</li>
+    <li>Keep the tool accessible — no installation of specialist security software required.</li>
+  </ul>
+
+  
+  <h2>3. Technology Stack</h2>
+  <table>
+    <tr><th>Component</th><th>Technology</th><th>Purpose</th></tr>
+    <tr><td>Language</td><td>Python 3.9+</td><td>Core application logic and scanning engine</td></tr>
+    <tr><td>UI Framework</td><td>Streamlit ≥ 1.35</td><td>Interactive browser-based front-end</td></tr>
+    <tr><td>HTTP Client</td><td>Requests ≥ 2.31</td><td>Fetching target site headers and following redirects</td></tr>
+    <tr><td>Data Export</td><td>csv · json (stdlib)</td><td>Generating downloadable CSV and JSON reports</td></tr>
+    <tr><td>URL Parsing</td><td>urllib.parse (stdlib)</td><td>Normalising and validating input URLs</td></tr>
+  </table>
+
+  
+  <h2>4. System Architecture</h2>
+  <p>The application follows a simple three-layer pipeline:</p>
+  <div class="arch">
+    <div class="arch-box">User Input<br /><small>(Streamlit UI)</small></div>
+    <div class="arch-arrow">→</div>
+    <div class="arch-box">Scanner Engine<br /><small>(app.py checks)</small></div>
+    <div class="arch-arrow">→</div>
+    <div class="arch-box">HTTP Request<br /><small>(requests lib)</small></div>
+    <div class="arch-arrow">→</div>
+    <div class="arch-box">Results &amp; Export<br /><small>(UI + CSV/JSON)</small></div>
+  </div>
+  <p>
+    All logic resides in a single file, <strong>app.py</strong>, which is intentionally kept minimal.
+    The scanner makes one HTTP GET request to the target URL, captures the response headers, then
+    passes them through nine independent check functions. Each function returns a structured dictionary
+    with four keys: <code>check</code>, <code>status</code>, <code>detail</code>, and <code>recommendation</code>.
+  </p>
+
+  
+  <h2>5. Features &amp; Checks Implemented</h2>
+  <table>
+    <tr><th>#</th><th>Check</th><th>Possible Verdicts</th><th>Security Risk Addressed</th></tr>
+    <tr><td>1</td><td>HTTPS / SSL</td><td><span class="pass">Pass</span> <span class="fail">Fail</span></td><td>Data interception, man-in-the-middle attacks</td></tr>
+    <tr><td>2</td><td>Strict-Transport-Security (HSTS)</td><td><span class="pass">Pass</span> <span class="warning">Warning</span> <span class="fail">Fail</span></td><td>Protocol downgrade attacks, cookie hijacking</td></tr>
+    <tr><td>3</td><td>Content-Security-Policy (CSP)</td><td><span class="pass">Pass</span> <span class="warning">Warning</span> <span class="fail">Fail</span></td><td>Cross-Site Scripting (XSS)</td></tr>
+    <tr><td>4</td><td>X-Frame-Options</td><td><span class="pass">Pass</span> <span class="warning">Warning</span> <span class="fail">Fail</span></td><td>Clickjacking attacks</td></tr>
+    <tr><td>5</td><td>X-Content-Type-Options</td><td><span class="pass">Pass</span> <span class="fail">Fail</span></td><td>MIME-type sniffing attacks</td></tr>
+    <tr><td>6</td><td>Referrer-Policy</td><td><span class="pass">Pass</span> <span class="warning">Warning</span></td><td>Sensitive URL leakage via Referer header</td></tr>
+    <tr><td>7</td><td>Permissions-Policy</td><td><span class="pass">Pass</span> <span class="warning">Warning</span></td><td>Unauthorised browser feature access</td></tr>
+    <tr><td>8</td><td>CORS (Access-Control-Allow-Origin)</td><td><span class="pass">Pass</span> <span class="fail">Fail</span></td><td>Cross-origin data theft</td></tr>
+    <tr><td>9</td><td>Server / Technology Disclosure</td><td><span class="pass">Pass</span> <span class="warning">Warning</span></td><td>Server fingerprinting and targeted exploits</td></tr>
+  </table>
+
+  
+  <h2>6. Application Workflow</h2>
+  <ol>
+    <li>The user enters a target URL in the Streamlit input form.</li>
+    <li>The <code>normalize_url()</code> function ensures a valid scheme (<code>https://</code>) is present.</li>
+    <li>The <code>fetch_headers()</code> function issues an HTTP GET request (timeout: 10 s), follows redirects, and captures the final response headers. SSL and connection errors are caught and surfaced as structured findings.</li>
+    <li>Nine check functions are invoked sequentially. Each inspects the relevant header value and returns a result dictionary.</li>
+    <li>The UI renders a <strong>security score</strong> (Pass count ÷ total × 100), four summary metrics, a per-check expandable detail panel, and download buttons for CSV and JSON exports.</li>
+  </ol>
+
+  
+  <h2>7. Key Code Components</h2>
+  <h3>7.1 URL Normalisation</h3>
+  <pre>def normalize_url(url: str) -&gt; str:
+    url = url.strip()
+    if not url.startswith(("http://", "https://")):
+        url = "https://" + url
+    return url</pre>
+
+  <h3>7.2 Header Fetching with Error Handling</h3>
+  <pre>def fetch_headers(url, timeout=10):
+    try:
+        resp = requests.get(url, timeout=timeout,
+                            allow_redirects=True, verify=True)
+        return resp, resp.headers, resp.url, None
+    except requests.exceptions.SSLError as e:
+        return None, {}, url, f"SSL Error: {e}"
+    except requests.exceptions.ConnectionError as e:
+        return None, {}, url, f"Connection Error: {e}"
+    except requests.exceptions.Timeout:
+        return None, {}, url, "Request timed out."</pre>
+
+  <h3>7.3 Example Check — HSTS</h3>
+  <pre>def check_hsts(headers):
+    val = headers.get("Strict-Transport-Security", "")
+    if not val:
+        return {"check": "HSTS", "status": "Fail", ...}
+    max_age = parse_max_age(val)
+    if max_age &lt; 31536000:
+        return {"check": "HSTS", "status": "Warning", ...}
+    return {"check": "HSTS", "status": "Pass", ...}</pre>
+
+  <h3>7.4 Export Functions</h3>
+  <p>
+    <code>results_to_csv()</code> uses Python's built-in <code>csv.DictWriter</code> to serialise results into an in-memory string buffer, returned directly to Streamlit's <code>st.download_button</code>.<br />
+    <code>results_to_json()</code> wraps results in a metadata envelope (scanned URL + UTC timestamp) and serialises with <code>json.dumps(indent=2)</code>.
+  </p>
+
+  
+  <h2>8. Project File Structure</h2>
+  <pre>cybersecurity/
+├── app.py            # Main application (scanner + Streamlit UI)
+└── requirements.txt  # Python dependencies</pre>
+
+  
+  <h2>9. How to Run the Application</h2>
+  <h3>Prerequisites</h3>
+  <ul>
+    <li>Python 3.9 or higher installed and added to system PATH</li>
+    <li>Internet connection to reach target URLs</li>
+  </ul>
+  <h3>Installation &amp; Launch</h3>
+  <pre># 1. Navigate to the project directory
+cd d:\cybersecuirty
+
+# 2. Install dependencies
+pip install -r requirements.txt
+
+# 3. Launch the application
+python -m streamlit run app.py</pre>
+  <p>The application opens automatically in the default browser at <strong>http://localhost:8501</strong>.</p>
+
+  
+  <h2>10. Sample Output</h2>
+  <table>
+    <tr><th>Check</th><th>Status</th><th>Detail</th></tr>
+    <tr><td>HTTPS / SSL</td><td><span class="pass">Pass</span></td><td>Site is served over HTTPS.</td></tr>
+    <tr><td>HSTS</td><td><span class="pass">Pass</span></td><td>Present with max-age=31536000.</td></tr>
+    <tr><td>CSP</td><td><span class="warning">Warning</span></td><td>Uses 'unsafe-inline' directive.</td></tr>
+    <tr><td>X-Frame-Options</td><td><span class="fail">Fail</span></td><td>Header is missing.</td></tr>
+    <tr><td>X-Content-Type-Options</td><td><span class="pass">Pass</span></td><td>Set to 'nosniff'.</td></tr>
+    <tr><td>Referrer-Policy</td><td><span class="warning">Warning</span></td><td>Header is missing.</td></tr>
+    <tr><td>Permissions-Policy</td><td><span class="warning">Warning</span></td><td>Header is missing.</td></tr>
+    <tr><td>CORS</td><td><span class="pass">Pass</span></td><td>CORS not broadly enabled.</td></tr>
+    <tr><td>Server Disclosure</td><td><span class="warning">Warning</span></td><td>Server: nginx/1.18.0 exposed.</td></tr>
+  </table>
+
+  
+  <h2>11. Limitations</h2>
+  <ul>
+    <li>The scanner performs <strong>passive analysis only</strong> — it inspects HTTP response headers and does not perform active exploitation or deep vulnerability scanning.</li>
+    <li>JavaScript-rendered content and single-page applications may present different headers than static pages; the scanner evaluates only the initial HTTP response.</li>
+    <li>Sites that block automated HTTP requests (via CAPTCHAs, WAFs, or IP filtering) may return incomplete or error results.</li>
+    <li>CORS analysis is limited to the <code>Access-Control-Allow-Origin</code> header; complex pre-flight scenarios are not simulated.</li>
+  </ul>
+
+  
+  <h2>12. Future Enhancements</h2>
+  <ul>
+    <li>Add cookie security checks (<code>Secure</code>, <code>HttpOnly</code>, <code>SameSite</code> flags).</li>
+    <li>Integrate DNS-based checks (DNSSEC, SPF, DMARC, DKIM).</li>
+    <li>Support batch scanning of multiple URLs from an uploaded file.</li>
+    <li>Add SSL certificate expiry date and cipher strength checks.</li>
+    <li>Integrate with the OWASP Top 10 mapping to contextualise each finding.</li>
+    <li>Add historical scan comparison to track security posture over time.</li>
+  </ul>
+
+  
+  <h2>13. Conclusion</h2>
+  <p>
+    The Automated Cybersecurity Web Scanner successfully meets all stated objectives. It provides a
+    fast, accessible, and informative way to evaluate the security header configuration of any
+    publicly reachable web server. Built with fewer than 400 lines of Python and two dependencies,
+    it demonstrates that meaningful security tooling does not require complex infrastructure.
+  </p>
+  <p>
+    The tool is well-suited for web developers, system administrators, and security students who
+    need a quick first-pass assessment of a site's defensive HTTP headers, and it produces
+    structured, shareable output suitable for inclusion in security audits or reports.
+  </p>
+
+  <div class="warnbox">
+    <strong>Ethical Notice:</strong> This tool is intended for educational purposes and authorised
+    security testing only. Always obtain explicit permission before scanning websites you do not own.
+  </div>
+
+  
+  <h2>14. References</h2>
+  <ul>
+    <li>OWASP Secure Headers Project — <a href="https://owasp.org/www-project-secure-headers/">owasp.org/www-project-secure-headers</a></li>
+    <li>Mozilla HTTP Observatory — <a href="https://observatory.mozilla.org/">observatory.mozilla.org</a></li>
+    <li>MDN Web Docs — HTTP Headers — <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers">developer.mozilla.org</a></li>
+    <li>Streamlit Documentation — <a href="https://docs.streamlit.io/">docs.streamlit.io</a></li>
+    <li>Requests Library — <a href="https://requests.readthedocs.io/">requests.readthedocs.io</a></li>
+    <li>RFC 6797 — HTTP Strict Transport Security (HSTS)</li>
+    <li>RFC 6454 — The Web Origin Concept (CORS)</li>
+  </ul>
+
+  <div class="footer">Made with IBM Bob</div>
+</div>
+</body>
+</html>
